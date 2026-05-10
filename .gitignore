@@ -546,3 +546,8 @@ pyrightconfig.json
 # Ignore all local history of files
 .history
 .ionide
+
+### Material de clase y enunciado del TP ###
+# La carpeta se preserva con .gitkeep, pero su contenido no se commitea
+material/*
+!material/.gitkeep
