@@ -1,0 +1,50 @@
+# Configuracion del Ejercicio 1 - Europa
+# Tres bloques: PCA con libreria, Oja (PC1 iterativa), Kohonen (SOM).
+# Cada main_*.py lee solamente la seccion que necesita.
+
+data:
+  # Path relativo a la raiz del repo (los main_*.py resuelven el absoluto).
+  path: "ej1/data/europe.csv"
+
+results:
+  pca: "ej1/results/pca"
+  oja: "ej1/results/oja"
+  kohonen: "ej1/results/kohonen"
+
+pca:
+  # PCA con libreria sobre las 7 variables numericas estandarizadas.
+  # Sin hiperparametros: calcula las 7 componentes y reporta segun varianza explicada.
+  n_components: 7
+  # Umbral para la linea de "varianza acumulada de referencia" en el scree plot.
+  variance_threshold: 0.8
+
+oja:
+  # Regla de Oja para extraer PC1 iterativamente sin resolver autovalores.
+  # eta: tasa de aprendizaje. Recomendacion teorica: 1e-3 constante o 0.5 decreciente.
+  # Con 28 muestras (dataset chico) 1e-3 converge holgadamente en pocos cientos de epocas.
+  eta: 0.001
+  epochs: 200
+  seed: 42
+  # Inicializacion de pesos: "uniform" (uniforme [0,1]) o "gaussian".
+  init: "uniform"
+  # Si true, normaliza w a norma unitaria al inicio. La regla mantiene ||w|| acotado de todos modos.
+  init_unit_norm: true
+
+kohonen:
+  # SOM: red de Kohonen para asociar paises por similitud en una grilla 2D.
+  # grid_size: dimension k de la grilla k x k. Con 28 paises, 4x4 (16 neuronas) da ~2/neurona.
+  grid_size: 4
+  # epochs: cada epoca recorre todo el dataset (28 muestras) en orden permutado.
+  # 500 epochs -> 14000 iteraciones, sobra para el tamaño del dataset.
+  epochs: 500
+  # eta_0: tasa de aprendizaje inicial. Recomendacion teorica: eta_0 <= 0.5.
+  eta_0: 0.5
+  # eta_final: valor al que decae eta linealmente.
+  eta_final: 0.01
+  # radius_0: radio inicial del vecindario en coordenadas de grilla. Suele ser k/2.
+  radius_0: 2.0
+  # radius_final: radio al final del entrenamiento. Suele ser 1 (solo la ganadora y sus 4-vecinos).
+  radius_final: 1.0
+  # init: "samples" (preferible por la teoria) o "random" (uniforme [-1,1]).
+  init: "samples"
+  seed: 42
