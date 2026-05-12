@@ -14,6 +14,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 
 import numpy as np
+import pandas as pd
 
 from shared.config_loader import load_yaml
 from shared.io_utils import load_europe
@@ -46,8 +47,6 @@ def main():
     # Sanity checks
     assert abs(res["explained_variance_ratio"].sum() - 1.0) < 1e-9, \
         "La suma de explained_variance_ratio no es 1"
-    assert (res["cross_check_cos_sim"] > 0.999).all(), \
-        f"Discrepancia sklearn vs eigh: {res['cross_check_cos_sim']}"
 
     print("=" * 70)
     print("PCA - Resultados")
@@ -62,21 +61,41 @@ def main():
             res["explained_variance_cum"])):
         print(f"  PC{i + 1}: eigval={lam:.4f}  evr={evr:.4f}  cum={cum:.4f}")
     print()
-    print(f"Cross-check sklearn vs eigh (cos sim): {res['cross_check_cos_sim'].round(6)}")
-    print()
 
-    interp = summarize_pc1_interpretation(res["loadings"], feature_names, pc_index=0)
-    print("Interpretacion de PC1 (cargas ordenadas por magnitud):")
-    for name, val in interp["loadings_sorted_by_abs"]:
-        print(f"  {name:>14s}: {val:+.4f}")
-    print()
-    top_pc1 = np.argsort(res["scores"][:, 0])[::-1][:5]
-    bot_pc1 = np.argsort(res["scores"][:, 0])[:5]
-    print(f"Top 5 paises por PC1: {[countries[i] for i in top_pc1]}")
-    print(f"Bot 5 paises por PC1: {[countries[i] for i in bot_pc1]}")
-    print()
+    for pc_idx in [0, 1]:
+        interp = summarize_pc1_interpretation(res["loadings"], feature_names, pc_index=pc_idx)
+        print(f"Interpretacion de PC{pc_idx+1} (cargas ordenadas por magnitud):")
+        for name, val in interp["loadings_sorted_by_abs"]:
+            print(f"  {name:>14s}: {val:+.4f}")
+        print()
+        top = np.argsort(res["scores"][:, pc_idx])[::-1][:5]
+        bot = np.argsort(res["scores"][:, pc_idx])[:5]
+        print(f"Top 5 paises por PC{pc_idx+1}: {[countries[i] for i in top]}")
+        print(f"Bot 5 paises por PC{pc_idx+1}: {[countries[i] for i in bot]}")
+        print()
 
     os.makedirs(out_dir, exist_ok=True)
+
+    # Guardar cargas (loadings) en CSV
+    loadings_df = pd.DataFrame(
+        res["loadings"],
+        index=feature_names,
+        columns=[f"PC{i+1}" for i in range(res["loadings"].shape[1])]
+    )
+    loadings_path = os.path.join(out_dir, "pca_loadings.csv")
+    loadings_df.to_csv(loadings_path)
+    print(f"Cargas guardadas en: {loadings_path}")
+
+    # Guardar scores (proyecciones de cada pais) en CSV
+    scores_df = pd.DataFrame(
+        res["scores"],
+        index=countries,
+        columns=[f"PC{i+1}" for i in range(res["scores"].shape[1])]
+    )
+    scores_path = os.path.join(out_dir, "pca_scores.csv")
+    scores_df.to_csv(scores_path)
+    print(f"Scores guardados en: {scores_path}")
+    print()
 
     plot_boxplots(X, feature_names,
                   os.path.join(out_dir, "boxplot_raw.png"),

@@ -151,9 +151,9 @@ Cosas decididas al implementar el EJ1 que vale la pena registrar para mantener c
 1. **Formato de configuración: YAML** (`ej1/config.yaml`). Soporta comentarios, consistente con TP3, fácil de versionar. Una sola configuración por ejercicio con secciones por bloque (`pca`, `oja`, `kohonen`).
 2. **Tres entrypoints separados** (`main_pca.py`, `main_oja.py`, `main_kohonen.py`) en lugar de un único orchestrator. Permite correr y entregar bloques de forma independiente.
 3. **`results/` subdividido por bloque** (`results/pca/`, `results/oja/`, `results/kohonen/`). Cada `main_*.py` escribe solo a su subcarpeta.
-4. **Librerías permitidas**: para PCA con librería se usan `sklearn.decomposition.PCA` y `numpy.linalg.eigh` (validación cruzada). Oja y Kohonen se implementan en numpy puro siguiendo la teoría literal.
+4. **Librerías permitidas**: para PCA con librería se usa `sklearn.decomposition.PCA`. Oja y Kohonen se implementan en numpy puro siguiendo la teoría literal.
 5. **`ZScoreScaler` reimplementado en `shared/preprocessing.py`** (no copiado del TP3). Son ~10 líneas de numpy; mantener TP4 self-contained justifica el costo.
-6. **Convención de signo en PCA**: en cada autovector, se fuerza positiva la componente de mayor `|valor|`. Esto vuelve comparables sklearn vs eigh vs Oja.
+6. **Convención de signo en PCA**: en cada autovector, se fuerza positiva la componente de mayor `|valor|`. Esto vuelve comparables sklearn vs Oja.
 7. **Sanity checks en cada `main_*.py`**: asserts mínimos sobre `explained_variance_ratio`, `cos_sim` con la referencia, normas, NaN, etc. No hay test suite formal; los asserts inline cumplen ese rol.
 8. **Presentación en LaTeX Beamer** (tema Metropolis), consistente con TP3. Las figuras se leen vía `\graphicspath` desde `ej1/results/`.
 
