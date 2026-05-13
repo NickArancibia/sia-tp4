@@ -121,6 +121,42 @@ def plot_loadings_heatmap(loadings, feature_names, path):
     save_fig(fig, path)
 
 
+def plot_pc1_pc2_loadings_bars(loadings, feature_names, path):
+    """Barras agrupadas por variable: compara las cargas de PC1 y PC2."""
+    vals = np.asarray(loadings, dtype=float)
+    pc1 = vals[:, 0]
+    pc2 = vals[:, 1]
+    x = np.arange(len(feature_names))
+    width = 0.36
+
+    fig, ax = plt.subplots(figsize=(10, 5.2))
+    bars1 = ax.bar(x - width / 2, pc1, width, color=PALETTE["primary"],
+                   edgecolor="black", linewidth=0.4, label="PC1")
+    bars2 = ax.bar(x + width / 2, pc2, width, color=PALETTE["highlight"],
+                   edgecolor="black", linewidth=0.4, label="PC2")
+
+    ax.axhline(0, color="black", linewidth=0.6)
+    ax.set_xticks(x)
+    ax.set_xticklabels(feature_names, rotation=20, ha="right")
+    ax.set_ylabel("Carga")
+    ax.set_title("Cargas por variable en PC1 y PC2")
+    ax.legend(loc="upper left")
+    ax.grid(axis="y", alpha=0.3)
+
+    for bars in (bars1, bars2):
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2,
+                    height + (0.018 if height >= 0 else -0.035),
+                    f"{height:+.2f}",
+                    ha="center",
+                    va="bottom" if height >= 0 else "top",
+                    fontsize=8)
+
+    fig.tight_layout()
+    save_fig(fig, path)
+
+
 def plot_biplot(scores, loadings, countries, feature_names, path,
                 pc_x=0, pc_y=1, scale_arrows=None):
     """Biplot PC_x vs PC_y: scatter de paises + flechas de cargas.

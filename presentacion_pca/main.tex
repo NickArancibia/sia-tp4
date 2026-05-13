@@ -1,0 +1,132 @@
+\documentclass[aspectratio=169, 10pt]{beamer}
+
+\usetheme{metropolis}
+\metroset{block=fill, numbering=fraction, progressbar=frametitle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{xcolor}
+
+\graphicspath{{../ej1/results/pca/}}
+
+\definecolor{accent}{HTML}{0F4C81}
+\setbeamercolor{frametitle}{bg=accent}
+\setbeamercolor{progress bar}{fg=accent}
+
+\title{PCA sobre el dataset Europa}
+\subtitle{Ejercicio 1 - Aprendizaje No Supervisado}
+\author{TP4 -- Sistemas de Inteligencia Artificial}
+\institute{ITBA --- 2026}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{1. Estandarizacion: por que es necesaria}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\linewidth]{boxplot_raw}
+      \vspace{0.05em}
+
+      \centering
+      \small Sin estandarizar
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics[width=\linewidth]{boxplot_standardized}
+      \vspace{0.05em}
+
+      \centering
+      \small Con z-score
+    \end{column}
+  \end{columns}
+
+  \vspace{0.35em}
+  \small
+  \begin{itemize}
+    \item Sin estandarizar, \texttt{Area} y \texttt{GDP} dominan la varianza solo por escala.
+    \item Con \textit{z-score}, cada variable queda con media 0 y varianza 1, y todas pasan a ser comparables.
+    \item Por eso aplicamos PCA sobre datos estandarizados, equivalente a trabajar sobre la matriz de correlacion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{2. Estructura del dataset: hay relaciones para resumir}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \includegraphics[width=\linewidth]{correlation_heatmap}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      \textbf{Idea clave:} el dataset no es una nube uniforme en 7D. Hay variables que se mueven juntas.
+      \vspace{0.5em}
+
+      \begin{itemize}
+        \item \texttt{GDP} y \texttt{Pop.growth}: $r=+0.76$.
+        \item \texttt{Life.expect} y \texttt{Pop.growth}: $r=+0.77$.
+        \item \texttt{GDP} y \texttt{Life.expect}: $r=+0.70$.
+        \item \texttt{Inflation} y \texttt{Life.expect}: $r=-0.68$.
+      \end{itemize}
+
+      \vspace{0.4em}
+      Entonces tiene sentido buscar nuevas direcciones que concentren la informacion redundante en pocas componentes.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{3. Cargas de PC1 y PC2}
+  \centering
+  \includegraphics[width=0.82\linewidth,height=0.54\textheight,keepaspectratio]{pc1_pc2_loadings_bars}
+
+  \vspace{0.15em}
+  \footnotesize
+  \textbf{PC1} define un eje de \textbf{desarrollo}: favorece \texttt{GDP}, \texttt{Life.expect} y \texttt{Pop.growth}.\\[0.2em]
+  \textbf{PC2} separa paises con mas \textbf{tension}: pesan fuerte \texttt{Military} y \texttt{Unemployment}.\\[0.2em]
+  Entre \textbf{PC1} y \textbf{PC2} explican el \textbf{63.1\%} de la varianza total.
+\end{frame}
+
+\begin{frame}{4. Biplot PC1 vs PC2}
+  \centering
+  \includegraphics[width=0.8\linewidth,height=0.64\textheight,keepaspectratio]{biplot_pc1_pc2}
+
+  \vspace{0.1em}
+  \footnotesize
+  \textbf{Luxembourg}: queda extremo en \textbf{PC1} porque combina muy alto \texttt{GDP}, alta
+  \texttt{Life.expect} y crecimiento poblacional positivo; por eso aparece sobre el eje de desarrollo.\\[0.2em]
+  \textbf{Greece}: sube en \textbf{PC2} porque presenta mas tension, especialmente por
+  \texttt{Military} y \texttt{Unemployment} altos.
+\end{frame}
+
+\begin{frame}[standout]
+  PCA resume el dataset en dos ejes interpretables:\\[0.4em]
+  \small desarrollo / bienestar y una dimension complementaria de tension economica.
+\end{frame}
+
+\begin{frame}{Backup: Varianza explicada}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \includegraphics[width=\linewidth]{scree_plot}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{itemize}
+        \item \textbf{PC1}: 46.1\% de la varianza.
+        \item \textbf{PC2}: 17.0\%.
+        \item \textbf{PC3}: 15.2\%.
+        \item \textbf{PC1 + PC2}: 63.1\%.
+      \end{itemize}
+
+      \vspace{0.4em}
+      \textbf{Lectura:}
+      \begin{itemize}
+        \item Con dos componentes ya visualizamos gran parte de la estructura.
+        \item Con tres componentes se llega a 78.3\%.
+        \item Hace falta una cuarta para superar el 80\%.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}

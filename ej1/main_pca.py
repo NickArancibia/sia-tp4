@@ -26,6 +26,7 @@ from ej1.analysis.pca import (
     plot_correlation_heatmap,
     plot_scree,
     plot_loadings_heatmap,
+    plot_pc1_pc2_loadings_bars,
     plot_biplot,
     plot_pc_ranking,
     summarize_pc1_interpretation,
@@ -112,6 +113,8 @@ def main():
                threshold=threshold)
     plot_loadings_heatmap(res["loadings"], feature_names,
                           os.path.join(out_dir, "loadings_heatmap.png"))
+    plot_pc1_pc2_loadings_bars(res["loadings"], feature_names,
+                               os.path.join(out_dir, "pc1_pc2_loadings_bars.png"))
     plot_biplot(res["scores"], res["loadings"], countries, feature_names,
                 os.path.join(out_dir, "biplot_pc1_pc2.png"),
                 pc_x=0, pc_y=1)
