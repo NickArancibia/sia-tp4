@@ -27,6 +27,9 @@ from ej1.analysis.kohonen import (
     plot_hits,
     plot_variable_maps,
     plot_convergence,
+    cluster_profile_table,
+    plot_cluster_profiles,
+    plot_neighbor_distance_graph,
 )
 
 
@@ -104,6 +107,15 @@ def main():
                        os.path.join(out_dir, "kohonen_variable_maps.png"))
     plot_convergence(som.history_,
                      os.path.join(out_dir, "kohonen_convergence.png"))
+
+    # Analisis profundo del mapa elegido:
+    # 1) Perfil promedio por cluster en valores originales (no estandarizados).
+    profiles = cluster_profile_table(som, X, X_std, countries, feature_names)
+    plot_cluster_profiles(profiles, feature_names,
+                          os.path.join(out_dir, "kohonen_cluster_profiles.png"))
+    # 2) Grafo de vecindad: aristas codifican la distancia U entre neuronas.
+    plot_neighbor_distance_graph(som, X_std, countries,
+                                 os.path.join(out_dir, "kohonen_neighbor_graph.png"))
 
     print(f"Figuras guardadas en: {out_dir}")
     print("OK")
