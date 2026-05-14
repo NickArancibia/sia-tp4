@@ -12,7 +12,7 @@
 \usepackage{xcolor}
 \usepackage{siunitx}
 
-\graphicspath{{../ej1/results/pca/}{../ej1/results/oja/}{../ej1/results/kohonen/}}
+\graphicspath{{../ej1/results/pca/}{../ej1/results/oja/}{../ej1/results/kohonen/}{../ej1/results/kohonen/sweep/}}
 
 \definecolor{accent}{HTML}{0F4C81}
 \setbeamercolor{frametitle}{bg=accent}
@@ -270,6 +270,15 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}{Triangulacion: tres caminos, una misma PC1}
+  \centering
+  \includegraphics[width=0.88\linewidth]{pc1_three_way_comparison}
+
+  \vspace{0.2em}
+  {\footnotesize
+  \textbf{Tres metodos independientes coinciden}: \texttt{eigh} sobre la matriz de correlacion, SVD de \texttt{sklearn.PCA} y red neuronal Oja. eigh y sklearn son identicos a precision de maquina; Oja aporta un error $\sim 10^{-3}$ propio de la iteracion.}
+\end{frame}
+
 % ============================================================
 % BLOQUE C: KOHONEN
 % ============================================================
@@ -364,6 +373,47 @@
   \includegraphics[height=0.85\textheight]{kohonen_variable_maps}
 \end{frame}
 
+\begin{frame}{Perfil promedio por cluster (valores originales)}
+  \scriptsize Cada fila es una neurona activa. Las celdas muestran el \alert{valor original} (no estandarizado); el color es el $z$-score respecto al promedio entre clusters (rojo $=$ alto, azul $=$ bajo).
+  \vspace{0.1em}
+  \centering
+  \includegraphics[width=0.82\linewidth]{kohonen_cluster_profiles}
+\end{frame}
+
+\begin{frame}{Por que son parecidos los paises de cada celda}
+  \begin{itemize}
+    \item \textbf{(3,3) Ireland, Luxembourg, Switzerland}: GDP $\sim$55300 USD (top), \texttt{Life.expect} 80.4, \texttt{Unemployment} 7.6, \texttt{Pop.growth} $+1.0$. Mismo perfil: economias muy ricas, demograficamente saludables.
+    \item \textbf{(0,2) Bulgaria, Estonia, Latvia}: GDP $\sim$17000 USD, \texttt{Inflation} 4.5\%, \texttt{Pop.growth} $-0.7$. Ex-orbita sovietica con encogimiento poblacional.
+    \item \textbf{(0,0) Croatia, Greece}: GDP $\sim$22150, \texttt{Unemployment} \alert{17.5\%}, \texttt{Military} alto. Crisis fiscal mediterranea.
+    \item \textbf{(0,3) Ukraine}: GDP 7200, \texttt{Inflation} \alert{8\%}, \texttt{Life.expect} 68.7. Outlier extremo en multiples ejes simultaneamente $\Rightarrow$ ocupa una neurona sola y queda aislado en la Matriz U.
+    \item \textbf{(3,0) Finland, Italy, Sweden}: GDP $\sim$36200, \texttt{Pop.growth} $+0.2$. Bloque norte-mediterraneo desarrollado pero sin ser el top.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Vecinos en el mapa: la topologia importa}
+  \begin{columns}[c]
+    \begin{column}{0.62\textwidth}
+      \includegraphics[width=\linewidth]{kohonen_neighbor_graph}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \footnotesize
+      Cada arista codifica la distancia entre los pesos de neuronas vecinas:
+      \begin{itemize}
+        \item Aristas \alert{gruesas y oscuras}: vecinos parecidos.
+        \item Aristas \alert{finas y claras}: fronteras.
+      \end{itemize}
+      \vspace{0.4em}
+
+      \textbf{Patrones que emergen}:
+      \begin{itemize}
+        \item La fila 3 (ricos) esta unida por aristas oscuras: Switzerland-Luxembourg-Ireland fluye continuamente hacia Germany-Norway y Netherlands.
+        \item Ucrania (0,3) tiene la arista mas clara hacia Bulgaria-Estonia-Latvia (0,2): ahi esta la frontera real.
+        \item Las dos neuronas \alert{vacias} en (1,2) y (1,3) actuan como zona buffer entre el cuadrante rico (abajo-derecha) y la zona pobre (arriba-derecha).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 \begin{frame}{Interpretacion del mapa}
   \begin{itemize}
     \item \textbf{Fila 3 (abajo)} --- alta \texttt{GDP}, alta \texttt{Life.expect}: Finland, Italy, Sweden, Germany, Norway, Netherlands, Ireland, Luxembourg, Switzerland.
@@ -377,6 +427,155 @@
     \item Vertical $\approx$ PC1 (desarrollo).
     \item Horizontal $\approx$ PC2 (crisis fiscal).
   \end{itemize}
+\end{frame}
+
+% ============================================================
+% Bloque Kohonen: barrido de hiperparametros
+% ============================================================
+
+\begin{frame}[standout]
+  \large Eleccion de hiperparametros\\[0.6em]
+  \footnotesize Cinco barridos, una variable a la vez
+\end{frame}
+
+\begin{frame}{Por que no \textit{cualquier} configuracion sirve}
+  \begin{itemize}
+    \item El SOM tiene varios hiperparametros que afectan \alert{de manera distinta} el mapa:
+    \begin{itemize}
+      \footnotesize
+      \item \textbf{Tamano de grilla} $k$ controla la resolucion: mas neuronas = ajuste mas fino pero clusters mas dispersos.
+      \item \textbf{Inicializacion} (muestras vs aleatorio) controla el punto de partida.
+      \item \textbf{Radio} $R(t)$ controla cuanta vecindad se actualiza: mucho vecindario $=$ mapa suave; nada $=$ k-means.
+      \item \textbf{Tasa de aprendizaje} $\eta(t)$ controla la magnitud de cada actualizacion.
+      \item \textbf{Semilla} (azar): el algoritmo es estocastico.
+    \end{itemize}
+    \item Para cada uno: \textbf{fijamos los demas, variamos uno solo}, y reportamos cuatro metricas:
+    \begin{itemize}
+      \footnotesize
+      \item \alert{QE final}: error de cuantizacion --- ajuste a los datos.
+      \item \alert{Neuronas activas}: cuantas reciben al menos un pais.
+      \item \alert{U mean}: que tan ``continuo'' es el mapa.
+      \item \alert{U std}: que tan marcadas son las fronteras entre clusters.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Barrido 1: tamano de grilla}
+  \centering
+  \includegraphics[width=\linewidth]{sweep_grid_size_maps}
+
+  \vspace{0.2em}
+  \includegraphics[width=0.95\linewidth]{sweep_grid_size_summary}
+\end{frame}
+
+\begin{frame}{Tamano de grilla: lectura}
+  \begin{itemize}
+    \item \textbf{$3 \times 3$}: 9 neuronas, todas pobladas, pero clusters \alert{forzosamente mezclados} (5 paises en una sola neurona). QE alto: 1.57.
+    \item \textbf{$4 \times 4$} (elegida): 14/16 activas, clusters densos pero separados. Balance entre resolucion y poblacion.
+    \item \textbf{$5 \times 5$ y $6 \times 6$}: QE baja drasticamente (1.05 y 0.84), \textit{pero} 7 y 13 neuronas quedan vacias respectivamente. El mapa se \alert{sparsifica}: muchos paises terminan en neuronas con un solo elemento, lo que no nos sirve para \textbf{agrupar}.
+    \item \textbf{Regla heuristica}: $k^2 \approx N/2$ a $N$. Con $N = 28$, $4 \times 4 = 16$ esta en el rango optimo.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Barrido 2: inicializacion}
+  \centering
+  \includegraphics[width=0.72\linewidth]{sweep_init_maps}
+
+  \vspace{-0.4em}
+  \includegraphics[width=0.95\linewidth]{sweep_init_summary}
+
+  \vspace{0.1em}
+  \scriptsize \alert{Promedio sobre 4 seeds} para que la comparacion no dependa del azar.
+\end{frame}
+
+\begin{frame}{Inicializacion: las dos opciones son equivalentes}
+  \begin{itemize}
+    \item \textbf{samples}: cada neurona arranca igual a una muestra del dataset $+$ jitter $10^{-3}$. QE final promedio: $1.37$, neuronas activas: $14.5$.
+    \item \textbf{random}: cada neurona arranca uniforme en $[-1, 1]^7$. QE final promedio: $1.38$, neuronas activas: $14.75$.
+    \item Diferencia \alert{despreciable} entre ambas, dentro del ruido por seed.
+    \item \textbf{Por que}: con 500 epocas y $R_0 = 2$ el SOM tiene tiempo de sobra para auto-organizarse; el punto de partida se olvida.
+    \item Igual elegimos \textbf{samples} por convencion teorica: la convergencia inicial es mas suave y al inicio QE ya es bajo.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Barrido 3: radio del vecindario}
+  \centering
+  \includegraphics[width=\linewidth]{sweep_radius_maps}
+
+  \vspace{0.2em}
+  \includegraphics[width=0.95\linewidth]{sweep_radius_summary}
+\end{frame}
+
+\begin{frame}{Radio: el hiperparametro mas delicado}
+  \begin{itemize}
+    \item \textbf{$R_0 = 1$ (solo ganadora)}: el SOM \alert{degenera en k-means}. No hay topologia: la posicion en la grilla es arbitraria. U std baja (0.18) porque las neuronas vecinas no se influencian.
+    \item \textbf{$R_0 = 2$} (elegida): vecindario amplio al inicio que se cierra a 1. Fronteras maximas (U std $= 0.46$), QE razonable (1.40).
+    \item \textbf{$R_0 = 3$}: arranca con vecindario casi global. Funciona pero el cluster de ricos queda fragmentado.
+    \item \textbf{$R$ constante $= 2$}: nunca focaliza. U mean baja (1.05) --- mapa muy suave --- pero QE alto (1.56) y 4 neuronas vacias.
+    \item \textbf{Conclusion}: schedule \alert{decreciente} con $R_0 \approx k/2$ es la receta clasica y la unica que produce simultaneamente fronteras y buen ajuste.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Barrido 4: tasa de aprendizaje}
+  \centering
+  \includegraphics[width=\linewidth]{sweep_eta_maps}
+
+  \vspace{0.2em}
+  \includegraphics[width=0.95\linewidth]{sweep_eta_summary}
+\end{frame}
+
+\begin{frame}{Tasa de aprendizaje: robusta}
+  \begin{itemize}
+    \item Los cuatro valores de $\eta_0 \in \{0.1, 0.3, 0.5, 0.9\}$ producen QE final dentro de $[1.33, 1.40]$ --- una franja del 5\%.
+    \item Para $\eta_0$ chico (0.1) el mapa no termina de definirse: 4 neuronas vacias, U mean mas alta.
+    \item Para $\eta_0$ grande (0.9) el SOM se ``estira'' mas, llega a 16/16 neuronas activas.
+    \item Elegimos $\eta_0 = 0.5$ porque produce U std \alert{maxima} (fronteras mas legibles) sin sacrificar ajuste.
+    \item \textbf{Lectura general}: el SOM es relativamente robusto a $\eta$ siempre que decaiga al final; el radio importa mucho mas.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Barrido 5: variabilidad por seed}
+  \centering
+  \includegraphics[width=\linewidth]{sweep_seeds_maps}
+
+  \vspace{0.2em}
+  \includegraphics[width=0.95\linewidth]{sweep_seeds_summary}
+\end{frame}
+
+\begin{frame}{Estabilidad: el algoritmo es estocastico pero coherente}
+  \begin{itemize}
+    \item Cuatro seeds distintos $\{42, 7, 123, 1000\}$ con la misma configuracion.
+    \item QE final: rango $[1.32, 1.40]$ ($\sim 5\%$ de variacion).
+    \item Neuronas activas: $14$--$15$ (siempre similar).
+    \item Los \textbf{clusters principales se conservan} en todas las corridas: el cuadrante de ricos, el outlier Ucrania, el bloque baltico/balcanico. Lo que cambia es la \alert{orientacion} del mapa (rotaciones / reflexiones) --- esperable porque la grilla no tiene direccion privilegiada.
+    \item \textbf{Conclusion}: el seed afecta la \alert{presentacion visual} pero no la \alert{estructura} aprendida.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Configuracion final elegida}
+  \footnotesize
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \textbf{Hiperparametros entregados}:
+      \begin{itemize}
+        \item \texttt{grid\_size = 4}
+        \item \texttt{epochs = 500}
+        \item \texttt{eta\_0 = 0.5} $\to$ \texttt{eta\_final = 0.01} (lineal)
+        \item \texttt{radius\_0 = 2.0} $\to$ \texttt{radius\_final = 1.0} (lineal)
+        \item \texttt{init = "samples"}
+        \item \texttt{seed = 42}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \textbf{Justificacion}:
+      \begin{itemize}
+        \item Grilla $4 \times 4$ esta en el sweet spot $k^2 \approx N/2$.
+        \item Schedule lineal decreciente de $\eta$ y $R$ saca lo mejor de las dos fases (ordenamiento global y refinamiento local).
+        \item $\eta_0 = 0.5$ maximiza la nitidez de las fronteras (U std).
+        \item Resultado \alert{reproducible} (seed fijo) y \alert{robusto} (rango $\pm$5\% en QE entre seeds).
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 % ============================================================
