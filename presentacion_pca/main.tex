@@ -26,7 +26,7 @@
 
 \maketitle
 
-\begin{frame}{1. Estandarizacion: por que es necesaria}
+\begin{frame}{1. Estandarizacion: por qué es necesaria}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \includegraphics[width=\linewidth]{boxplot_raw}
@@ -60,7 +60,7 @@
     \end{column}
     \begin{column}{0.42\textwidth}
       \small
-      \textbf{Idea clave:} el dataset no es una nube uniforme en 7D. Hay variables que se mueven juntas.
+      \textbf{Idea clave:} hay variables que se mueven juntas.
       \vspace{0.5em}
 
       \begin{itemize}
@@ -82,51 +82,17 @@
 
   \vspace{0.15em}
   \footnotesize
-  \textbf{PC1} define un eje de \textbf{desarrollo}: favorece \texttt{GDP}, \texttt{Life.expect} y \texttt{Pop.growth}.\\[0.2em]
-  \textbf{PC2} separa paises con mas \textbf{tension}: pesan fuerte \texttt{Military} y \texttt{Unemployment}.\\[0.2em]
-  Entre \textbf{PC1} y \textbf{PC2} explican el \textbf{63.1\%} de la varianza total.
+  \textbf{PC1} favorece \texttt{GDP}, \texttt{Life.expect} y \texttt{Pop.growth}.\\[0.2em]
+  \textbf{PC2} pesan fuerte \texttt{Military} y \texttt{Unemployment}.
 \end{frame}
 
 \begin{frame}{4. Biplot PC1 vs PC2}
   \centering
-  \includegraphics[width=0.8\linewidth,height=0.64\textheight,keepaspectratio]{biplot_pc1_pc2}
+  \includegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{biplot_pc1_pc2}
 
   \vspace{0.1em}
   \footnotesize
-  \textbf{Luxembourg}: queda extremo en \textbf{PC1} porque combina muy alto \texttt{GDP}, alta
-  \texttt{Life.expect} y crecimiento poblacional positivo; por eso aparece sobre el eje de desarrollo.\\[0.2em]
-  \textbf{Greece}: sube en \textbf{PC2} porque presenta mas tension, especialmente por
-  \texttt{Military} y \texttt{Unemployment} altos.
-\end{frame}
-
-\begin{frame}[standout]
-  PCA resume el dataset en dos ejes interpretables:\\[0.4em]
-  \small desarrollo / bienestar y una dimension complementaria de tension economica.
-\end{frame}
-
-\begin{frame}{Backup: Varianza explicada}
-  \begin{columns}[T]
-    \begin{column}{0.58\textwidth}
-      \includegraphics[width=\linewidth]{scree_plot}
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \small
-      \begin{itemize}
-        \item \textbf{PC1}: 46.1\% de la varianza.
-        \item \textbf{PC2}: 17.0\%.
-        \item \textbf{PC3}: 15.2\%.
-        \item \textbf{PC1 + PC2}: 63.1\%.
-      \end{itemize}
-
-      \vspace{0.4em}
-      \textbf{Lectura:}
-      \begin{itemize}
-        \item Con dos componentes ya visualizamos gran parte de la estructura.
-        \item Con tres componentes se llega a 78.3\%.
-        \item Hace falta una cuarta para superar el 80\%.
-      \end{itemize}
-    \end{column}
-  \end{columns}
+  Las flechas indican la direccion de cada variable; paises cercanos entre si tienen perfiles similares.
 \end{frame}
 
 \end{document}
